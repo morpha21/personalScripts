@@ -1,0 +1,10 @@
+#!/bin/bash
+
+useless_packages=$(pacman -Qdtq) 
+
+if [[ $useless_packages == "" ]]
+then
+	echo "well, I believe there's nothing to remove..."
+else
+	sudo pacman -Rs $useless_packages
+fi

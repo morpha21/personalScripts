@@ -1,0 +1,46 @@
+#!/bin/bash
+
+bpurple='\033[1;35m'
+orange='\033[0;33m'
+cyan='\033[1;36m'
+NC='\033[0m'
+
+clear -x
+
+obj=$1
+
+tipo=$(file "$1" | awk -F": " '{print$2}' | awk '{print$1}')
+
+if [ "$tipo" = "directory" ]; then
+	cd "$obj"
+	mostrar
+	cd - > /dev/null
+elif [ "$tipo" = "" ]; then	# lista o diretorio atual
+	for coisa in *; do	# lista os diretorios
+		tipo=$(ls -ld "$coisa")
+		tipo=${tipo:0:1}
+		if [ "$tipo" = "d" ]; then
+			echo -e "	${bpurple}$coisa${NC}"
+		fi
+	done
+	for coisa in *; do	#lista os arquivos
+		tipo=$(ls -ld "$coisa")
+		tipo=${tipo:0:1}
+		if [ "$tipo" = "-" ]; then
+			tamanho=$(ls -lh -d "$coisa" | awk '{print$5}')
+			echo -e "$tamanho	${orange}$coisa${NC}"
+		fi
+	done
+	for coisa in *; do	#lista os links
+		tipo=$(ls -ld "$coisa")
+		tipo=${tipo:0:1}
+		if [ "$tipo" = "l" ]; then
+			tamanho=$(ls -lh -d "$coisa" | awk '{print$5}')
+			link_to=$(ls -ld "$coisa" | awk -F"-> " '{print$2}')
+			echo -e "$tamanho	${cyan}$coisa${NC} -> $link_to"
+		fi
+	done
+else	# listar objeto solo
+	tamanho=$(ls -lh -d "$obj" | awk '{print$5}')
+	echo -e "$tamanho	${orange}$obj${NC}"
+fi

@@ -1,0 +1,21 @@
+#! /bin/bash
+
+arquivo='/sys/class/backlight/amdgpu_bl0/brightness'
+luz=$(cat $arquivo)
+
+if [ $1 == 'mais' ];then
+	echo "$((luz+21))" | tee $arquivo
+elif [ $1 == 'menas' ]; then
+	echo $[$(cat $arquivo) - 12] | tee $arquivo
+	if [ "$luz" -lt 12 ]; then
+		echo $[$(cat $arquivo) - 1] | tee $arquivo
+	fi
+else
+	echo "usage:"
+	echo "- for turning laptop screen brighter:"
+	echo "$ brilhante mais"
+	echo "- for turning laptop screen darker"
+	echo "$ brilhante menas"
+fi
+
+[ "$luz" -eq 0 ] && redshift -x -P -o -m randr -O 3960 -g .9:.8:0.7

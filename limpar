@@ -1,0 +1,4 @@
+#!/bin/bash
+
+pautoremove
+paccache -r

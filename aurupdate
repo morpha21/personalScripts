@@ -1,0 +1,25 @@
+#!/bin/bash
+
+orange='\033[0;33m'
+NC='\033[0m'
+current=$(pwd)
+
+cd $HOME/AUR/
+
+echo ""
+
+for dir in $(ls); do
+	cd $dir
+	echo -e "${orange}$dir:${NC}"
+	msg=$(git pull)
+	if [ "$msg" == "Already up to date." ]
+	then
+		echo "up to date"
+	else
+		makepkg -sirc
+	fi
+	cd ..
+	echo ""
+done
+
+cd $current

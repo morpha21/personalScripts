@@ -1,0 +1,11 @@
+#!/bin/bash
+session=`ls /usr/share/xsessions/ | dmenu -i -p "Sessions:" | awk -F. '{print$1}'`
+current=`awk -F= '/Session/ {print $2}' /etc/sddm.conf.d/sddm.conf`
+
+sudo changeSession $current $session
+#### sudo sed -i "s/$current/$session/g" /etc/sddm.conf.d/sddm.conf
+
+echo "current = " $current
+echo "session = " $session
+echo "in file right now: "
+awk -F= '/Session/ {print $2}' /etc/sddm.conf.d/sddm.conf

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+atual=$(cat /home/morpha/.fehbg | tail -1 | awk '{print$4}' | sed "s/'//g")
+novo=$(ls ~/Pictures/wallpaper/ | dmenu -b -p "choose wallpaper: ")
+feh --bg-fill ~/Pictures/wallpaper/"$novo"
+

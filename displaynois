@@ -1,0 +1,16 @@
+#!/bin/bash
+
+hdmi=$(xrandr | grep -i hdmi | awk '{print$1}')
+escolha=`(echo right-of; echo left-of; echo above; echo below; echo off) | dmenu -p "HDMI: "`
+audio=`pacmd list-sinks | grep hdmi | head -1 | awk -F": " '{print$2}' | sed 's/<//g' | sed 's/>//g''`
+
+
+if [ $escolha == off ]; then
+    xrandr --output "$hdmi" --off
+    pacmd set-default-sink alsa_output.pci-0000_04_00.6.analog-stereo
+else
+    xrandr --output "$hdmi" --auto --"$escolha" eDP-1
+    pacmd set-default-sink "$audio"
+    $(tail -1 ~/.fehbg | sed "s/'//g")
+fi
+pacmd list-sinks | grep hdmi | head -1 | awk -F:  '{print}' | sed 's/<//g' | sed 's/>//g'
