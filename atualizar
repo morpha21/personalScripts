@@ -1,4 +1,11 @@
 #!/bin/bash
 
-sudo pacman -Syu
-aurupdate
+sudo echo "let's update stuff..."
+
+aurupdate &
+
+
+sudo alacritty -e pacman -Syu
+
+
+

@@ -1,25 +1,61 @@
 #!/bin/bash
 
+update() {
+	target=$1
+	msg=$(cd $target; git pull)
+	if [ "$msg" == "Already up to date." ]
+	then
+		echo -e "${orange}$dir:${NC} $msg"
+		echo $current_dir >> $HOME/AUR/.updated.tmp
+	else
+		echo $current_dir >> $HOME/AUR/.outdated.tmp
+	fi
+}
+
+lines() {
+	wc $1 -l | awk '{print$1}'
+}
+
+
 orange='\033[0;33m'
 NC='\033[0m'
+
 current=$(pwd)
+
 
 cd $HOME/AUR/
 
-echo ""
+outdated="$HOME/AUR/.outdated.tmp"
+updated="$HOME/AUR/.updated.tmp"
+total="$HOME/AUR/.total.tmp"
+
+touch "$outdated"
+touch "$updated"
 
 for dir in $(ls); do
-	cd $dir
-	echo -e "${orange}$dir:${NC}"
-	msg=$(git pull)
-	if [ "$msg" == "Already up to date." ]
-	then
-		echo "up to date"
-	else
-		makepkg -sirc
-	fi
-	cd ..
-	echo ""
+	echo $dir >> "$total"
+	update $dir &
 done
 
+t=$(lines $total)
+
+while [ $(($(lines $outdated)+$(lines $updated))) -ne $t ]
+do
+	sleep 0.1
+done
+
+if [ $(lines $outdated) -gt 0 ]
+then
+	for dir in $(cat $outdated)
+	do
+		cd $dir
+		makepkg -sirc
+		cd ..
+	done
+fi
+
+rm $total
+rm $updated
+rm $outdated
 cd $current
+
