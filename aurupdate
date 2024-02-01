@@ -6,9 +6,9 @@ update() {
 	if [ "$msg" == "Already up to date." ]
 	then
 		echo -e "${orange}$dir:${NC} $msg"
-		echo $current_dir >> $HOME/AUR/.updated.tmp
+		echo $target >> $HOME/AUR/.updated.tmp
 	else
-		echo $current_dir >> $HOME/AUR/.outdated.tmp
+		echo $target >> $HOME/AUR/.outdated.tmp
 	fi
 }
 
