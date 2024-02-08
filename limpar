@@ -1,4 +1,12 @@
 #!/bin/bash
 
-pautoremove
+useless_packages=$(pacman -Qdtq)
+
+if [[ $useless_packages == "" ]]
+then
+	echo "no orphan dependecies to remove..."
+else
+	sudo pacman -Rs $useless_packages
+fi
+
 paccache -r
