@@ -1,10 +1,10 @@
 # personal scripts
 
 These are some scripts I made for my laptop. The idea is just to automate some 
-tasks I usually do. Some of them I map to a keyboard shortcut, others are just an 
-alias to some command or couple of commands. Maybe I can give a full description 
-of each one someday, but right now I just want to mantain this as a sort of 
-backup. Feel free to ask me about anything or to make suggestions. 
+tasks I usually do. Some of them I map to a keyboard shortcut, others I call from
+Maybe I can give a full description of each one someday, but right now I just
+want to mantain this as a sort of backup. Feel free to ask me about anything or
+to make suggestions. 
 
 ## mostrar
 
@@ -27,5 +27,10 @@ It can be used just by being called:
 or, it can be used with a target directory as an argument: 
 `mostrar <your_favorite_directory>`
 
+## brilhante
+In my personal machine, I use Arch Linux with bspwm as a window manager. Right after installing it, I realized my laptop brightness keys were not working out of 
+the box, so I made `brilhante`, a script that changes screen brightness, and mapped it to a keyboard shortcut using `sxhkd`. 
+
 #### TODO: 
-It does not give a decent output when used to list an empty directory. Gotta fix this.
+`mostrar` does not give a decent output when used to list an empty directory. Should I fix this? Maybe I should just make a golang utility that could possibly be 
+an alternative to `ls`.
