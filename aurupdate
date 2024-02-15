@@ -3,9 +3,9 @@
 update() {
 	target=$1
 	msg=$(cd $target; git pull)
+	echo -e "${orange}$dir:${NC} $msg"
 	if [ "$msg" == "Already up to date." ]
 	then
-		echo -e "${orange}$dir:${NC} $msg"
 		echo $target >> $HOME/AUR/.updated.tmp
 	else
 		echo $target >> $HOME/AUR/.outdated.tmp
