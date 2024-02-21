@@ -1,61 +1,94 @@
 #!/bin/bash
 
-update() {
-	target=$1
-	msg=$(cd $target; git pull)
-	echo -e "${orange}$dir:${NC} $msg"
-	if [ "$msg" == "Already up to date." ]
-	then
-		echo $target >> $HOME/AUR/.updated.tmp
-	else
-		echo $target >> $HOME/AUR/.outdated.tmp
-	fi
-}
-
-lines() {
-	wc $1 -l | awk '{print$1}'
-}
-
-
-orange='\033[0;33m'
-NC='\033[0m'
-
-current=$(pwd)
+# Function used to check if there are updates for a given package.
+# Receives a target repository and checks if it is up to date.
+# Stores the targets in their respective arrays.
+#__________________________________________________________#
+update() {                                                 # the shell inside of a shell
+	target=$1					   # may have changed it's directory,
+	msg=$(cd $target; git pull)			   # but the current shell didn't, so
+                                                           # there's no need to cd back to anywhere now.
+                                                           #
+                                                           #
+                                                           #
+	if [ "$msg" == "Already up to date." ]		   #
+	then						   #
+		echo -e "${orange}$dir:${NC} $msg"         # uses color defined below
+	else						   #
+		echo $target > $HOME/.outdated		   #
+	fi						   #
+}                                                          #
+#__________________________________________________________#
 
 
-cd $HOME/AUR/
+#______________________________#
+#                              #
+#   1. Preparing...            #
+#______________________________#
+                               #
+orange='\033[0;33m'            # colors to be used.
+NC='\033[0m'                   #
+                               #
+current=$(pwd)                 # way back.
+                               #
+outdated=$HOME/.outdated       #
+mkfifo $outdated               # where we'll keep track of outdated packages.
+#______________________________#
 
-outdated="$HOME/AUR/.outdated.tmp"
-updated="$HOME/AUR/.updated.tmp"
-total="$HOME/AUR/.total.tmp"
 
-touch "$outdated"
-touch "$updated"
+#______________________________#
+#		               #
+#   2. Running Things          #
+#______________________________#
+                               #
+cd $HOME/AUR/                  # let's roll
+		               #
+		               #
+for dir in $(ls); do           #
+	update $dir &	       # checks for updates concurrently
+done		               #
+		               #
+wait	                       # waits for all of the proccess to be completed
+#______________________________# before going on
 
-for dir in $(ls); do
-	echo $dir >> "$total"
-	update $dir &
-done
+#______________________________#
+#		               #
+#  3. Updating packages        #
+#______________________________#
+if [ -s "$outdated" ]          #
+then                           #
+	while IFS= read -r dir #
+	do                     #
+		cd "$dir"      #
+		echo $dir      #
+		cd ..          #
+	done < "$outdated"     #
+fi                             #
+#______________________________#
 
-t=$(lines $total)
 
-while [ $(($(lines $outdated)+$(lines $updated))) -ne $t ]
-do
-	sleep 0.1
-done
+#____________#
+             #
+rm $outdated # removes the fifo file
+cd $current  # go back
+#____________#
 
-if [ $(lines $outdated) -gt 0 ]
-then
-	for dir in $(cat $outdated)
-	do
-		cd $dir
-		makepkg -sirc
-		cd ..
-	done
-fi
 
-rm $total
-rm $updated
-rm $outdated
-cd $current
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
