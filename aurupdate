@@ -42,74 +42,60 @@ update() {                                          # the shell inside of a shel
                                   #
 orange='\033[0;33m'               # colors to be used.
 NC='\033[0m'                      #
+                                  #
 current=$(pwd)                    # way back.
-outdated=$HOME/.outdated          #
+                                  #
+outdated=$HOME/.outdated          # FIFO files path
 updated=$HOME/.updated            #
-[ -p  $outdated ] && rm $outdated #
-mkfifo $outdated                  #
-[ -p  $updated ]  && rm $updated  #
-mkfifo $updated                   #
-                                  # where we'll keep track of outdated packages.
+                                  #
+[ -p  $outdated ] && rm $outdated # Removes FIFO files if exists
+mkfifo $outdated                  # and then create new ones.
+[ -p  $updated ]  && rm $updated  # We'll use the FIFO files to
+mkfifo $updated                   # keep track of outdated packages.
                                   #
 #_________________________________#
 
+#_________________________________#
+#                                 #
+#     2. Concurrent Git-Pulls     #
+#_________________________________#
+cd $HOME/AUR/                     # let's roll
+                                  #
+pids=()                           #
+for dir in $(ls)                  #
+do                                #
+	update $dir &	          # checks for updates concurrently
+	pid+=($!)                 # stores the pid of the above subshell
+done		                  #
+                                  #
+wait ${pids[@]}                   # waits for all pids to end
+#_________________________________#
 
-
-#______________________________#
-#		               #
-#   2. Concurrent Git-Pulls    #
-#______________________________#
-cd $HOME/AUR/                  # let's roll
-                               #
-pids=()                        #
-for dir in $(ls)               #
-do                             #
-	update $dir &	       # checks for updates concurrently
-	pid+=($!)
-done		               #
-echo "before waiting"
-
-wait ${pids[@]}
-
-
-
-
-
-
-
-
-
-
-#______________________________#
-#		               #
-#  3. Updating packages        #
-#______________________________#
-up=$(cat $updated | wc -w)     #
-
-total=$(ls | wc -w)
-
-if [ $total -ne $up ]
-then
-                                #
-	out=$(cat $outdated)           #
-	echo "last step"               #
-	                               #
-	for dir in $out                #
-	do                             #
-		cd "$dir"              #
-		echo makepkg -sirc          # builds the AUR package
-		cd ..                  #
-	done
-fi                             #
-#______________________________#
-
-
+#_________________________________#
+#		                  #
+#     3. Updating packages        #
+#_________________________________#
+                                  #
+up=$(cat $updated | wc -w)        # we use this to check if
+total=$(ls | wc -w)               # $outdated is not empty.
+                                  #
+if [ $total -ne $up ]             # if not empty
+then                              #
+	out=$(cat $outdated)      #
+	for dir in $out           # for each outdated directory,
+	do                        #
+		cd "$dir"         #
+		makepkg -sirc     # builds the AUR package
+		cd ..             #
+	done                      #
+fi                                #
+#_________________________________#
 
 
 #  The End:
 #____________#
              #
-rm $outdated # removes the fifo file
+rm $outdated # removes the fifo files
 rm $updated  #
 cd $current  # go back
 #____________#
