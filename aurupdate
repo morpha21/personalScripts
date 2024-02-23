@@ -1,94 +1,115 @@
 #!/bin/bash
 
+#______________________________________________________________________#
+#                                                                      #
+#	# This script was made to update the AUR packages on           #
+# my Arch Linux system. It assumes the AUR packages are all            #
+# on the $HOME/AUR/ directory. It goes to that directory,              #
+# git-pulls all repositories concurrently, and then, if there          #
+# are updates, it builds their PKGBUILD and install them sequentially. #
+#                                                                      #
+#______________________________________________________________________#
+
+
+
 # Function used to check if there are updates for a given package.
 # Receives a target repository and checks if it is up to date.
-# Stores the targets in their respective arrays.
-#__________________________________________________________#
-update() {                                                 # the shell inside of a shell
-	target=$1					   # may have changed it's directory,
-	msg=$(cd $target; git pull)			   # but the current shell didn't, so
-                                                           # there's no need to cd back to anywhere now.
-                                                           #
-                                                           #
-                                                           #
-	if [ "$msg" == "Already up to date." ]		   #
-	then						   #
-		echo -e "${orange}$dir:${NC} $msg"         # uses color defined below
-	else						   #
-		echo $target > $HOME/.outdated		   #
-	fi						   #
-}                                                          #
-#__________________________________________________________#
+# Stores the target's name into a FIFO file.
+#___________________________________________________#
+update() {                                          # the shell inside of a shell
+	target=$1				    # may have changed it's directory,
+	msg=$(cd $target; git pull)		    # but the current shell didn't, so
+                                                    # there's no need to cd back to anywhere now.
+                                                    #
+                                                    #
+                                                    #
+	if [ "$msg" == "Already up to date." ]	    #
+	then					    #
+		echo -e "${orange}$dir:${NC} $msg"  # uses color defined below
+		echo $target >> $updated &          #
+	else					    #
+		echo $target >> $outdated &         #
+	fi                                          #
+	return					    #
+}                                                   #
+#___________________________________________________#
 
 
-#______________________________#
-#                              #
-#   1. Preparing...            #
-#______________________________#
-                               #
-orange='\033[0;33m'            # colors to be used.
-NC='\033[0m'                   #
-                               #
-current=$(pwd)                 # way back.
-                               #
-outdated=$HOME/.outdated       #
-mkfifo $outdated               # where we'll keep track of outdated packages.
-#______________________________#
+#_________________________________#
+#                                 #
+#      1. Preparing...            #
+#_________________________________#
+                                  #
+orange='\033[0;33m'               # colors to be used.
+NC='\033[0m'                      #
+current=$(pwd)                    # way back.
+outdated=$HOME/.outdated          #
+updated=$HOME/.updated            #
+[ -p  $outdated ] && rm $outdated #
+mkfifo $outdated                  #
+[ -p  $updated ]  && rm $updated  #
+mkfifo $updated                   #
+                                  # where we'll keep track of outdated packages.
+                                  #
+#_________________________________#
+
 
 
 #______________________________#
 #		               #
-#   2. Running Things          #
+#   2. Concurrent Git-Pulls    #
 #______________________________#
-                               #
 cd $HOME/AUR/                  # let's roll
-		               #
-		               #
-for dir in $(ls); do           #
+                               #
+pids=()                        #
+for dir in $(ls)               #
+do                             #
 	update $dir &	       # checks for updates concurrently
+	pid+=($!)
 done		               #
-		               #
-wait	                       # waits for all of the proccess to be completed
-#______________________________# before going on
+echo "before waiting"
+
+wait ${pids[@]}
+
+
+
+
+
+
+
+
+
 
 #______________________________#
 #		               #
 #  3. Updating packages        #
 #______________________________#
-if [ -s "$outdated" ]          #
-then                           #
-	while IFS= read -r dir #
-	do                     #
-		cd "$dir"      #
-		echo $dir      #
-		cd ..          #
-	done < "$outdated"     #
+up=$(cat $updated | wc -w)     #
+
+total=$(ls | wc -w)
+
+if [ $total -ne $up ]
+then
+                                #
+	out=$(cat $outdated)           #
+	echo "last step"               #
+	                               #
+	for dir in $out                #
+	do                             #
+		cd "$dir"              #
+		echo makepkg -sirc          # builds the AUR package
+		cd ..                  #
+	done
 fi                             #
 #______________________________#
 
 
+
+
+#  The End:
 #____________#
              #
 rm $outdated # removes the fifo file
+rm $updated  #
 cd $current  # go back
 #____________#
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
