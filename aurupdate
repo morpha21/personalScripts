@@ -84,6 +84,9 @@ then                              #
 	out=$(cat $outdated)      #
 	for dir in $out           # for each outdated directory,
 	do                        #
+		echo ""	
+		echo ""
+		echo "updating ${orange}$dir${NC}"
 		cd "$dir"         #
 		makepkg -sirc     # builds the AUR package
 		cd ..             #
