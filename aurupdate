@@ -22,10 +22,10 @@ update() {                                          # the shell inside of a shel
                                                     # there's no need to cd back to anywhere now.
                                                     #
                                                     #
+	echo -e "${orange}$dir:${NC} $msg"          # uses color defined below
                                                     #
 	if [ "$msg" == "Already up to date." ]	    #
 	then					    #
-		echo -e "${orange}$dir:${NC} $msg"  # uses color defined below
 		echo $target >> $updated &          #
 	else					    #
 		echo $target >> $outdated &         #
@@ -84,9 +84,10 @@ then                              #
 	out=$(cat $outdated)      #
 	for dir in $out           # for each outdated directory,
 	do                        #
-		echo ""	
+		echo ""           #
+		echo ""           #
+		echo -e "updating ${orange}$dir${NC}"
 		echo ""
-		echo "updating ${orange}$dir${NC}"
 		cd "$dir"         #
 		makepkg -sirc     # builds the AUR package
 		cd ..             #
